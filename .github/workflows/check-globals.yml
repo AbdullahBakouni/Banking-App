@@ -1,0 +1,28 @@
+name: Check globals.css
+
+on:
+  push:
+    paths:
+      - "globals.css"
+  pull_request:
+    paths:
+      - "globals.css"
+
+jobs:
+  lint-css:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Tailwind build (to verify CSS)
+        run: npx tailwindcss -i ./globals.css -o ./out.css --minify
