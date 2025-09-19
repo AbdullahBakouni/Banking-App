@@ -3,7 +3,7 @@ import React from "react";
 const Home: React.FC = () => {
   return (
     <>
-      <div className="bg-pink-500">Hi</div>
+      <div className="bg-pink-500 font-inter">Hi</div>
     </>
   );
 };
