@@ -3,10 +3,10 @@ name: Check globals.css
 on:
   push:
     paths:
-      - "globals.css"
+      - "app/globals.css"
   pull_request:
     paths:
-      - "globals.css"
+      - "app/globals.css"
 
 jobs:
   lint-css:
@@ -25,4 +25,4 @@ jobs:
         run: npm install
 
       - name: Run Tailwind build (to verify CSS)
-        run: npx tailwindcss -i ./globals.css -o ./out.css --minify
+        run: npx tailwindcss -i ./app/globals.css -o ./out.css --minify
