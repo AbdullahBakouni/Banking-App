@@ -33,6 +33,7 @@ const CustomInput = ({
                   placeholder={placeholder}
                   className="input-class"
                   {...field}
+                  value={field.value ?? ""}
                   type={name === "password" ? "password" : "text"}
                 />
               </FormControl>
