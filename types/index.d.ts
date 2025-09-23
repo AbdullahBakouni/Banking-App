@@ -16,6 +16,7 @@ declare type SignUpParams = {
   dateOfBirth: string;
   ssn: string;
   email: string;
+  postalCode: string;
   password: string;
 };
 
@@ -25,11 +26,11 @@ declare type LoginUser = {
 };
 
 declare type User = {
-  $id: string;
+  id: string;
   email: string;
-  userId: string;
-  dwollaCustomerUrl: string;
-  dwollaCustomerId: string;
+  userId: number;
+  dwollaCustomerUrl: string | null;
+  dwollaCustomerId: string | null;
   firstName: string;
   lastName: string;
   address1: string;
@@ -127,10 +128,10 @@ declare type NewDwollaCustomerParams = {
   lastName: string;
   email: string;
   type: string;
+  postalCode: string;
   address1: string;
   city: string;
   state: string;
-  postalCode: string;
   dateOfBirth: string;
   ssn: string;
 };
@@ -311,7 +312,7 @@ declare interface createBankAccountProps {
   accountId: string;
   bankId: string;
   fundingSourceUrl: string;
-  sharableId: string;
+  shareableId: string;
 }
 
 declare interface getBanksProps {

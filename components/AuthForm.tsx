@@ -10,21 +10,15 @@ import { Form } from "@/components/ui/form";
 import CustomInput from "./CustomInput";
 import { Loader2 } from "lucide-react";
 import { authFormSchema } from "@/lib/utils";
-import { SignUp } from "@/actions/user.action";
-import { SignIn } from "@/actions/user.action";
+import { SignUp } from "@/actions/user.actions";
+import { SignIn } from "@/actions/user.actions";
 import { useRouter } from "next/navigation";
+import PlaidLink from "./PlaidLink";
 const AuthForm = ({ type }: { type: string }) => {
-  type UserState =
-    | null
-    | { error: string }
-    | {
-        message: string;
-        user: {
-          firstname: string;
-          lastname: string;
-        };
-      };
+  type UserState = null | User;
+
   const [user, setUser] = useState<UserState>(null);
+  const [errors, setErrors] = useState<string | null>(null);
   const [isLoading, setisLoading] = useState(false);
   const formSchema = authFormSchema(type);
   const form = useForm<z.infer<typeof formSchema>>({
@@ -35,6 +29,7 @@ const AuthForm = ({ type }: { type: string }) => {
     },
   });
   const router = useRouter();
+  console.log(user);
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setisLoading(true);
 
@@ -46,6 +41,7 @@ const AuthForm = ({ type }: { type: string }) => {
           firstName: data.firstName!,
           lastName: data.lastName!,
           address1: data.address1!,
+          postalCode: data.postalCode!,
           city: data.city!,
           state: data.state!,
           dateOfBirth: data.dateOfBirth!,
@@ -55,16 +51,39 @@ const AuthForm = ({ type }: { type: string }) => {
         };
 
         const newUser = await SignUp(userData);
-
-        setUser(newUser);
+        if (newUser?.user) {
+          const newUserValue = {
+            user: {
+              id: newUser?.user.id,
+              userId: newUser?.user.userId,
+              firstName: newUser?.user.firstName,
+              lastName: newUser?.user.lastName,
+              address1: newUser?.user.address1,
+              postalCode: newUser?.user.postalCode,
+              city: newUser?.user.city,
+              email: newUser?.user.email,
+              state: newUser?.user.state,
+              ssn: newUser?.user.ssn,
+              dateOfBirth: newUser?.user.dateOfBirth,
+              dwollaCustomerId: newUser?.user.dwollaCustomerId,
+              dwollaCustomerUrl: newUser?.user.dwollaCustomerUrl,
+            },
+          };
+          setUser(newUserValue.user);
+        }
+        if (newUser?.email_error) setErrors("Email already exists");
+        if (newUser?.missing_error) setErrors("All fields are required");
       }
       if (type === "sign-in") {
         const response = await SignIn({
           email: data.email,
           password: data.password,
         });
-
-        if (response) router.push("/");
+        if (response.error_missing_credentials)
+          setErrors("Email and password are required");
+        if (response.error_inavalid_credentials)
+          setErrors("Invalid Credentials");
+        if (response.success_message) router.push("/");
       }
     } catch (error) {
       console.log(error);
@@ -100,7 +119,9 @@ const AuthForm = ({ type }: { type: string }) => {
         </div>
       </header>
       {user ? (
-        <div className="flex flex-col gap-4">{/*PlaidLink Comp*/}</div>
+        <div className="flex flex-col gap-4">
+          <PlaidLink user={user} variant="primary" />
+        </div>
       ) : (
         <>
           <Form {...form}>
@@ -139,6 +160,12 @@ const AuthForm = ({ type }: { type: string }) => {
                       name="state"
                       label="State"
                       placeholder="Example: NY"
+                    />
+                    <CustomInput
+                      control={form.control}
+                      name="postalCode"
+                      label="Postal Code"
+                      placeholder="Example: 11101"
                     />
                   </div>
                   <div className="flex gap-4">
@@ -182,6 +209,13 @@ const AuthForm = ({ type }: { type: string }) => {
                     "Sign Up"
                   )}
                 </Button>
+                {errors && (
+                  <div className="flex-center">
+                    <p className="mt-2 text-16 text-red-500 font-semibold">
+                      {errors}
+                    </p>
+                  </div>
+                )}
               </div>
             </form>
           </Form>
