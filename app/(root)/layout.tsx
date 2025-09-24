@@ -1,19 +1,17 @@
+import { getCurrentUser } from "@/actions/user.actions";
 import MobileNav from "@/components/MobileNav";
 import SideBar from "@/components/SideBar";
 import Image from "next/image";
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const loggendin = {
-    firstName: "Abdullah",
-    lastName: "Bakouni",
-  };
+  const loggendin = await getCurrentUser();
   return (
     <main className="flex h-screen w-full font-inter">
-      <SideBar />
+      <SideBar user={loggendin} />
 
       <div className="flex flex-col size-full">
         <div className="root-layout">

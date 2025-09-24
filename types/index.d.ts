@@ -210,10 +210,11 @@ declare interface TotlaBalanceBoxProps {
 
 declare interface FooterProps {
   user: User;
+  type?: string;
 }
 
 declare interface RightSidebarProps {
-  user: User;
+  user: User | null;
   transactions: Transaction[];
   banks: Bank[] & Account[];
 }

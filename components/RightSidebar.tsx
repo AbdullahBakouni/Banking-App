@@ -1,4 +1,3 @@
-import { Jersey_20 } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";

@@ -5,13 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
+import Footer from "./Footer";
 
-const SideBar: React.FC = () => {
+const SideBar = ({ user }: SiderbarProps) => {
   const pathname = usePathname();
-  const loggendin = {
-    FirstName: "Abdullah",
-    LastName: "Bakouni",
-  };
   return (
     <section className="sidebar">
       <nav className="flex flex-col gap-4">
@@ -56,7 +53,7 @@ const SideBar: React.FC = () => {
         })}
         USER
       </nav>
-      FOOTER
+      <Footer user={user} />
     </section>
   );
 };

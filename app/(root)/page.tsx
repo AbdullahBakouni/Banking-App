@@ -1,14 +1,20 @@
+import { getAccount, getAccounts } from "@/actions/bank.actions";
+import { getCurrentUser } from "@/actions/user.actions";
 import HeaderBox from "@/components/HeaderBox";
+import RecentTransaction from "@/components/RecentTransaction";
 import RightSidebar from "@/components/RightSidebar";
 import TotalBalanceBox from "@/components/TotalBalanceBox";
 import React from "react";
 
-const Home: React.FC = () => {
-  const loggedin = {
-    firstName: "Abdullah",
-    lastName: "Bakouni",
-    email: "aboodbak70@gmail.com",
-  };
+const Home = async ({ searchParams: { id, page } }: SearchParamProps) => {
+  const currentPage = Number((page as string) || 1);
+  const loggedin = await getCurrentUser();
+  if (!loggedin || !loggedin.id) return;
+  const accounts = await getAccounts(loggedin?.id);
+  if (!accounts) return;
+  const accountsData = accounts?.data;
+  const appwriteItemId = (id as string) || accountsData[0]?.bankId;
+  const account = await getAccount(appwriteItemId);
   return (
     <section className="home">
       <div className="home-content">
@@ -20,17 +26,22 @@ const Home: React.FC = () => {
             subtext="Access and Manage your account and transaction efficiently."
           />
           <TotalBalanceBox
-            accounts={[]}
-            totalBanks={1}
-            totalCurrentBalance={1250.76}
+            accounts={accountsData}
+            totalBanks={accounts?.totalBanks}
+            totalCurrentBalance={accounts?.totalCurrentBalance}
           />
         </header>
-        {/*Recent Transcations*/}
+        <RecentTransaction
+          accounts={accountsData}
+          transactions={account?.transactions}
+          page={currentPage}
+          appwriteItemId={appwriteItemId}
+        />
       </div>
       <RightSidebar
         user={loggedin}
-        transactions={[]}
-        banks={[{ currentBalance: 124.5 }, { currentBalance: 125.69 }]}
+        transactions={account?.transactions}
+        banks={accountsData?.slice(0, 2)}
       />
     </section>
   );

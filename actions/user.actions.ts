@@ -209,7 +209,7 @@ export const createLinkToken = async (user: User) => {
         client_user_id: user.id,
       },
       client_name: `${user.firstName} ${user.lastName}`,
-      products: ["auth"] as Products[],
+      products: ["auth", "transactions"] as Products[],
       language: "en",
       country_codes: ["US"] as CountryCode[],
     };
@@ -310,3 +310,79 @@ export const exchangePublicToken = async ({
     console.error("An error occurred while creating exchanging token:", error);
   }
 };
+
+export async function getCurrentUser() {
+  try {
+    // 1. Get token from cookies
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
+    if (!token) return null;
+
+    // 2. Verify token
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+
+    if (!decoded?.userId) return null;
+
+    // 3. Query DB
+    const [user] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.id, decoded.userId));
+
+    if (!user) return null;
+
+    return {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstname,
+      lastName: user.lastname,
+    };
+  } catch (err) {
+    console.error("Error fetching current user:", err);
+    return null;
+  }
+}
+
+export async function logoutAccount() {
+  const cookieStore = await cookies();
+
+  // Overwrite the cookie with an expired one
+  cookieStore.set("token", "", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 0, // expire immediately
+    path: "/",
+  });
+
+  return { success: true, message: "Logged out successfully" };
+}
+
+export async function getBanks(userId: string) {
+  try {
+    const banks = await db
+      .select()
+      .from(banksTable)
+      .where(eq(banksTable.userId, userId));
+
+    return parseStringify(banks);
+  } catch (error) {
+    console.error("Error getting banks:", error);
+    return [];
+  }
+}
+
+export async function getBank(bankid: string) {
+  try {
+    const [bank] = await db
+      .select()
+      .from(banksTable)
+      .where(eq(banksTable.id, bankid)); // assuming `id` is PK
+
+    return bank ? parseStringify(bank) : null;
+  } catch (error) {
+    console.error("Error getting bank:", error);
+    return null;
+  }
+}

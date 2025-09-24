@@ -1,5 +1,11 @@
 import { sql } from "drizzle-orm";
-import { integer, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
+import {
+  integer,
+  pgTable,
+  timestamp,
+  uuid,
+  varchar,
+} from "drizzle-orm/pg-core";
 
 export const usersTable = pgTable("users", {
   id: uuid("id")
@@ -33,4 +39,25 @@ export const banksTable = pgTable("banks", {
   accessToken: varchar("access_token", { length: 255 }).notNull(),
   fundingSourceUrl: varchar("funding_source_url", { length: 500 }),
   shareableId: varchar("shareable_id", { length: 255 }),
+});
+
+export const transactionsTable = pgTable("transactions", {
+  id: uuid("id")
+    .primaryKey()
+    .default(sql`uuid_generate_v4()`),
+
+  // relation to bank
+  bankId: uuid("bank_id")
+    .notNull()
+    .references(() => banksTable.id, { onDelete: "cascade" }),
+
+  // optional: if the transfer involves another bank
+  senderBankId: uuid("sender_bank_id").references(() => banksTable.id),
+
+  name: varchar("name", { length: 255 }).notNull(),
+  amount: integer("amount").notNull(),
+  channel: varchar("channel", { length: 50 }), // ex: "online", "pos"
+  category: varchar("category", { length: 100 }), // ex: "shopping", "utilities"
+
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });
