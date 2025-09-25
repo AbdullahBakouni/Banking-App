@@ -6,13 +6,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 const BankTabItem = ({ account, appwriteItemId }: BankTabItemProps) => {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const isActive = appwriteItemId === account?.appwriteItemId;
-
+  const isActive = appwriteItemId === account?.bankId;
   const handleBankChange = () => {
     const newUrl = formUrlQuery({
       params: searchParams.toString(),
       key: "id",
-      value: account?.appwriteItemId,
+      value: account?.bankId,
     });
     router.push(newUrl, { scroll: false });
   };
@@ -20,7 +19,7 @@ const BankTabItem = ({ account, appwriteItemId }: BankTabItemProps) => {
   return (
     <div
       onClick={handleBankChange}
-      className={cn(`banktab-item`, {
+      className={cn(`banktab-item cursor-pointer`, {
         " border-blue-600": isActive,
       })}
     >

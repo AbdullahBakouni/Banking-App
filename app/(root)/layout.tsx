@@ -2,6 +2,7 @@ import { getCurrentUser } from "@/actions/user.actions";
 import MobileNav from "@/components/MobileNav";
 import SideBar from "@/components/SideBar";
 import Image from "next/image";
+import { log } from "node:console";
 
 export default async function RootLayout({
   children,
@@ -9,6 +10,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const loggendin = await getCurrentUser();
+  console.log("user", loggendin);
   return (
     <main className="flex h-screen w-full font-inter">
       <SideBar user={loggendin} />

@@ -240,6 +240,7 @@ export const createBankAccount = async ({
         fundingSourceUrl,
         shareableId,
       })
+      .onConflictDoNothing()
       .returning();
 
     return bankAccount;
@@ -261,43 +262,92 @@ export const exchangePublicToken = async ({
     const accessToken = response.data.access_token;
     const itemId = response.data.item_id;
 
+    console.log("Plaid Item ID:", itemId);
+
     // Get account information from Plaid using the access token
     const accountsResponse = await plaidClient.accountsGet({
       access_token: accessToken,
     });
 
-    const accountData = accountsResponse.data.accounts[0];
+    console.log(
+      "Number of accounts returned by Plaid:",
+      accountsResponse.data.accounts.length,
+    );
 
-    // Create a processor token for Dwolla using the access token and account ID
-    const request: ProcessorTokenCreateRequest = {
-      access_token: accessToken,
-      account_id: accountData.account_id,
-      processor: "dwolla" as ProcessorTokenCreateRequestProcessorEnum,
-    };
+    // Iterate through all accounts and create a bank account for each
+    for (const accountData of accountsResponse.data.accounts) {
+      console.log(
+        "Processing account:",
+        accountData.name,
+        "ID:",
+        accountData.account_id,
+      );
 
-    const processorTokenResponse =
-      await plaidClient.processorTokenCreate(request);
-    const processorToken = processorTokenResponse.data.processor_token;
+      try {
+        // Create a processor token for Dwolla using the access token and account ID
+        const request: ProcessorTokenCreateRequest = {
+          access_token: accessToken,
+          account_id: accountData.account_id,
+          processor: "dwolla" as ProcessorTokenCreateRequestProcessorEnum,
+        };
 
-    // Create a funding source URL for the account using the Dwolla customer ID, processor token, and bank name
-    const fundingSourceUrl = await addFundingSource({
-      dwollaCustomerId: user.dwollaCustomerId || "",
-      processorToken,
-      bankName: accountData.name,
-    });
+        const processorTokenResponse =
+          await plaidClient.processorTokenCreate(request);
+        const processorToken = processorTokenResponse.data.processor_token;
+        console.log(
+          "Processor Token created for account:",
+          accountData.account_id,
+        );
+        console.log("Dwolla Customer ID being used:", user.dwollaCustomerId);
+        // Create a funding source URL for the account using the Dwolla customer ID, processor token, and bank name
+        const fundingSourceUrl = await addFundingSource({
+          dwollaCustomerId: user.dwollaCustomerId || "",
+          processorToken,
+          bankName: accountData.name,
+        });
 
-    // If the funding source URL is not created, throw an error
-    if (!fundingSourceUrl) throw Error;
+        // If the funding source URL is not created, throw an error
+        if (!fundingSourceUrl) {
+          console.error(
+            "Funding source URL not created for account:",
+            accountData.account_id,
+          );
+          throw new Error("Funding source URL not created.");
+        }
+        console.log(
+          "Funding Source URL created for account:",
+          accountData.account_id,
+        );
 
-    // Create a bank account using the user ID, item ID, account ID, access token, funding source URL, and shareableId ID
-    await createBankAccount({
-      userId: user.id,
-      bankId: itemId,
-      accountId: accountData.account_id,
-      accessToken,
-      fundingSourceUrl,
-      shareableId: encryptId(accountData.account_id),
-    });
+        // Create a bank account using the user ID, item ID, account ID, access token, funding source URL, and shareableId ID
+        const bankAccount = await createBankAccount({
+          userId: user.id,
+          bankId: itemId,
+          accountId: accountData.account_id,
+          accessToken,
+          fundingSourceUrl,
+          shareableId: encryptId(accountData.account_id),
+        });
+
+        if (bankAccount) {
+          console.log(
+            "Bank account successfully created or already exists for:",
+            accountData.account_id,
+          );
+        } else {
+          console.log(
+            "Bank account was not created (onConflictDoNothing triggered) for:",
+            accountData.account_id,
+          );
+        }
+      } catch (innerError) {
+        console.error(
+          "Error processing individual account:",
+          accountData.account_id,
+          innerError,
+        );
+      }
+    }
 
     // Revalidate the path to reflect the changes
     revalidatePath("/");
@@ -337,6 +387,10 @@ export async function getCurrentUser() {
       email: user.email,
       firstName: user.firstname,
       lastName: user.lastname,
+      dwollaCustomerUrl: user.dwollaCustomerUrl,
+      dwollaCustomerId: user.dwollaCustomerId,
+      state: user.state,
+      city: user.city,
     };
   } catch (err) {
     console.error("Error fetching current user:", err);

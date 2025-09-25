@@ -22,7 +22,6 @@ const RecentTransaction = ({
     indexOfFirstTransaction,
     indexOfLastTransaction,
   );
-
   return (
     <section className="recent-transactions">
       <header className="flex items-center justify-between">
@@ -60,7 +59,7 @@ const RecentTransaction = ({
               type="full"
             />
 
-            <TransactionsTable transactions={currentTransactions} />
+            <TransactionsTable transactions={transactions} />
 
             {/*{totalPages > 1 && (
               <div className="my-4 w-full">

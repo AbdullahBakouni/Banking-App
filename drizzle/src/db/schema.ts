@@ -3,6 +3,7 @@ import {
   integer,
   pgTable,
   timestamp,
+  uniqueIndex,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -25,21 +26,32 @@ export const usersTable = pgTable("users", {
   dwollaCustomerUrl: varchar({ length: 255 }),
   dwollaCustomerId: varchar({ length: 255 }),
 });
-export const banksTable = pgTable("banks", {
-  id: uuid("id")
-    .primaryKey()
-    .default(sql`uuid_generate_v4()`),
+export const banksTable = pgTable(
+  "banks",
+  {
+    id: uuid("id")
+      .primaryKey()
+      .default(sql`uuid_generate_v4()`),
 
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => usersTable.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
 
-  bankId: varchar("bank_id", { length: 255 }).notNull(),
-  accountId: varchar("account_id", { length: 255 }).notNull(),
-  accessToken: varchar("access_token", { length: 255 }).notNull(),
-  fundingSourceUrl: varchar("funding_source_url", { length: 500 }),
-  shareableId: varchar("shareable_id", { length: 255 }),
-});
+    bankId: varchar("bank_id", { length: 255 }).notNull(),
+    accountId: varchar("account_id", { length: 255 }).notNull(),
+    accessToken: varchar("access_token", { length: 255 }).notNull(),
+    fundingSourceUrl: varchar("funding_source_url", { length: 500 }),
+    shareableId: varchar("shareable_id", { length: 255 }),
+  },
+  (table) => {
+    return {
+      uniqueBankAccount: uniqueIndex("unique_bank_account").on(
+        table.bankId,
+        table.accountId,
+      ),
+    };
+  },
+);
 
 export const transactionsTable = pgTable("transactions", {
   id: uuid("id")
