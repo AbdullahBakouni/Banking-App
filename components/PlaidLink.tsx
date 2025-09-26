@@ -11,7 +11,6 @@ import Image from "next/image";
 const PlaidLink = ({ user, variant }: PlaidLinkProps) => {
   const router = useRouter();
   const [token, setToken] = useState("");
-  console.log(user);
   useEffect(() => {
     const getLinkToken = async () => {
       const data = await createLinkToken(user);

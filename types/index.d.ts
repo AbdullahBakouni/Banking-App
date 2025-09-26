@@ -288,6 +288,8 @@ declare interface CreateTransactionProps {
   receiverId: string;
   receiverBankId: string;
   email: string;
+  channel?: string;
+  category?: string;
 }
 
 declare interface getTransactionsByBankIdProps {

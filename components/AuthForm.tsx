@@ -29,7 +29,6 @@ const AuthForm = ({ type }: { type: string }) => {
     },
   });
   const router = useRouter();
-  console.log(user);
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setisLoading(true);
 

@@ -440,3 +440,16 @@ export async function getBank(bankid: string) {
     return null;
   }
 }
+
+export async function getBankByAccountId(accountId: string) {
+  try {
+    const [bank] = await db
+      .select()
+      .from(banksTable)
+      .where(eq(banksTable.accountId, accountId));
+    return bank ? parseStringify(bank) : null;
+  } catch (error) {
+    console.error("Error getting bank by AcoountId:", error);
+    return null;
+  }
+}

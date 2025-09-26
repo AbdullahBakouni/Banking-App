@@ -59,17 +59,19 @@ export const transactionsTable = pgTable("transactions", {
     .default(sql`uuid_generate_v4()`),
 
   // relation to bank
-  bankId: uuid("bank_id")
-    .notNull()
-    .references(() => banksTable.id, { onDelete: "cascade" }),
+  bankId: uuid("bank_id").references(() => banksTable.id, {
+    onDelete: "cascade",
+  }),
 
   // optional: if the transfer involves another bank
   senderBankId: uuid("sender_bank_id").references(() => banksTable.id),
-
+  receiverBankId: uuid("receiver_bank_id").references(() => banksTable.id),
+  senderId: uuid("sender_id").references(() => usersTable.id),
+  receiverId: uuid("receiver_id").references(() => usersTable.id),
   name: varchar("name", { length: 255 }).notNull(),
-  amount: integer("amount").notNull(),
+  amount: varchar("amount", { length: 255 }).notNull(),
   channel: varchar("channel", { length: 50 }), // ex: "online", "pos"
   category: varchar("category", { length: 100 }), // ex: "shopping", "utilities"
-
-  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  email: varchar({ length: 255 }).notNull().unique(),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow(),
 });
