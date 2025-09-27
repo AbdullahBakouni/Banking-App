@@ -1,10 +1,10 @@
 import Link from "next/link";
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Pagination } from "./ui/pagination";
 import BankTabItem from "./BankTabItem";
 import BankInfo from "./BankInfo";
 import TransactionsTable from "./TransactionsTable";
+import { Pagination } from "./Pagination";
 
 const RecentTransaction = ({
   appwriteItemId,
@@ -37,7 +37,7 @@ const RecentTransaction = ({
       <Tabs defaultValue={appwriteItemId} className="w-full">
         <TabsList className="recent-transactions-tablist">
           {accounts.map((account: Account) => (
-            <TabsTrigger key={account.id} value={account.appwriteItemId}>
+            <TabsTrigger key={account.id} value={account.bankId}>
               <BankTabItem
                 key={account.id}
                 account={account}
@@ -49,7 +49,7 @@ const RecentTransaction = ({
 
         {accounts.map((account: Account) => (
           <TabsContent
-            value={account.appwriteItemId}
+            value={account.bankId}
             key={account.id}
             className="space-y-4"
           >
@@ -59,13 +59,13 @@ const RecentTransaction = ({
               type="full"
             />
 
-            <TransactionsTable transactions={transactions} />
+            <TransactionsTable transactions={currentTransactions} />
 
-            {/*{totalPages > 1 && (
+            {totalPages > 1 && (
               <div className="my-4 w-full">
                 <Pagination totalPages={totalPages} page={page} />
               </div>
-            )}*/}
+            )}
           </TabsContent>
         ))}
       </Tabs>

@@ -6,6 +6,7 @@ import { plaidClient } from "@/lib/plaid";
 import { parseStringify } from "@/lib/utils";
 import { eq } from "drizzle-orm";
 import { CountryCode } from "plaid";
+import { getTransactionsByBankId } from "./transaction.actions";
 
 export async function getAccounts(userId: string) {
   try {
@@ -85,21 +86,22 @@ export async function getAccount(bankId: string) {
     });
 
     const accountData = accountsResponse.data.accounts[0];
-    // 3. Get transfer transactions from DB (Drizzle)
-    const transferTransactionsData = await db
-      .select()
-      .from(transactionsTable)
-      .where(eq(transactionsTable.bankId, bank.id));
+    // get transfer transactions from appwrite
+    const transferTransactionsData = await getTransactionsByBankId({
+      bankId: bank.id,
+    });
 
-    const transferTransactions = transferTransactionsData.map((tx) => ({
-      id: tx.id,
-      name: tx.name!,
-      amount: tx.amount!,
-      date: tx.createdAt, // adjust column name
-      paymentChannel: tx.channel,
-      category: tx.category,
-      type: tx.senderBankId === bank.id ? "debit" : "credit",
-    }));
+    const transferTransactions = transferTransactionsData.documents.map(
+      (tx) => ({
+        id: tx.id,
+        name: tx.name!,
+        amount: tx.amount!,
+        date: tx.createdAt, // adjust column name
+        paymentChannel: tx.channel,
+        category: tx.category,
+        type: tx.senderBankId === bank.id ? "debit" : "credit",
+      }),
+    );
 
     // 4. Get institution info from Plaid
     const institution = await getInstitution({
