@@ -361,6 +361,7 @@ export async function getCurrentUser() {
 
     return {
       id: user.id,
+      userId: user.userid,
       email: user.email,
       firstName: user.firstname,
       lastName: user.lastname,
