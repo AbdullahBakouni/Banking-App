@@ -262,27 +262,13 @@ export const exchangePublicToken = async ({
     const accessToken = response.data.access_token;
     const itemId = response.data.item_id;
 
-    console.log("Plaid Item ID:", itemId);
-
     // Get account information from Plaid using the access token
     const accountsResponse = await plaidClient.accountsGet({
       access_token: accessToken,
     });
 
-    console.log(
-      "Number of accounts returned by Plaid:",
-      accountsResponse.data.accounts.length,
-    );
-
     // Iterate through all accounts and create a bank account for each
     for (const accountData of accountsResponse.data.accounts) {
-      console.log(
-        "Processing account:",
-        accountData.name,
-        "ID:",
-        accountData.account_id,
-      );
-
       try {
         // Create a processor token for Dwolla using the access token and account ID
         const request: ProcessorTokenCreateRequest = {
@@ -294,11 +280,6 @@ export const exchangePublicToken = async ({
         const processorTokenResponse =
           await plaidClient.processorTokenCreate(request);
         const processorToken = processorTokenResponse.data.processor_token;
-        console.log(
-          "Processor Token created for account:",
-          accountData.account_id,
-        );
-        console.log("Dwolla Customer ID being used:", user.dwollaCustomerId);
         // Create a funding source URL for the account using the Dwolla customer ID, processor token, and bank name
         const fundingSourceUrl = await addFundingSource({
           dwollaCustomerId: user.dwollaCustomerId || "",
@@ -314,10 +295,6 @@ export const exchangePublicToken = async ({
           );
           throw new Error("Funding source URL not created.");
         }
-        console.log(
-          "Funding Source URL created for account:",
-          accountData.account_id,
-        );
 
         // Create a bank account using the user ID, item ID, account ID, access token, funding source URL, and shareableId ID
         const bankAccount = await createBankAccount({
