@@ -47,12 +47,16 @@ It focuses on reliability, clean architecture, and modular design so it can scal
 
 ```mermaid
 flowchart TD
-    U[User / Client] --> F[Frontend UI]
-    F --> B[Backend API]
-    B --> A[(Accounts DB)]
-    B --> T[(Transactions DB)]
-    B --> L[(Logs & Analytics)]
-    A --> T
+    U[User or Client] --> F[Frontend - Next.js]
+    F -->|Server Actions| B[Backend - Next.js API Routes]
+    B --> D[(PostgreSQL Database)]
+    B --> P[(Plaid Integration - Bank Accounts)]
+    B --> W[(Dwolla Integration - Transactions)]
+    B --> L[(Logs and Analytics)]
+    D --> B
+    P --> B
+    W --> B
+    L --> B
     B --> U
 ```
 # ⚙️ Installation
